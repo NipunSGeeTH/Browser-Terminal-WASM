@@ -70,6 +70,7 @@ impl FileSystem {
           fs.create_dir("/sys", 0.0);
             fs.create_dir("/env", 0.0);
              fs.create_dir("/home/document", 0.0);
+        fs.create_dir("/home/media", 0.0);
 
 
         // Initialize default encrypted files
@@ -94,7 +95,7 @@ impl FileSystem {
         let sudo_pssed_content = vec![169, 188, 180, 217, 68, 101, 116, 104, 186, 176, 163, 206, 64, 115, 115, 49, 200, 238];
 
         fs.create_file("/env/mypass.txt", sudo_pssed_content, 0.0);
-        fs.create_file("/home/document/logo.png", LOGO_PNG.to_vec(), 0.0);
+        fs.create_file("/home/media/logo.png", LOGO_PNG.to_vec(), 0.0);
 
         fs
     }
