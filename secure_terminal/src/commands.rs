@@ -142,6 +142,7 @@ pub fn execute_command(
         "history" => handle_history(term),
         "theme" => handle_theme(term, args),
         "reboot" => handle_reboot(fs, sudo, term),
+        "exit" => handle_exit(),
         "help" => handle_help(),
         "clear" => "CLEARED".to_string(),
         "downld" => handle_download(fs, args),
@@ -409,9 +410,14 @@ fn handle_reboot(fs: &mut FileSystem, sudo: &mut SudoState, term: &mut TerminalS
     "REBOOT".to_string()
 }
 
+/// exit - Ask frontend to leave terminal page (browser back)
+fn handle_exit() -> String {
+    "EXIT".to_string()
+}
+
 /// help - Display available commands
 fn handle_help() -> String {
-    "Available commands: ls, cd, pwd, cat, mkdir, touch, cp, mv, rm, sudo, date, echo, whoami, history, theme, newtab, reboot, downld, clear".to_string()
+    "Available commands: ls, cd, pwd, cat, mkdir, touch, cp, mv, rm, sudo, date, echo, whoami, history, theme, newtab, reboot, exit, downld, clear".to_string()
 }
 
 /// downld - Download file (returns base64 encoded content)

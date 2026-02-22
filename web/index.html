@@ -118,8 +118,16 @@
             return `Opened new tab: ${parsed.toString()}`;
         }
 
+        function leaveTerminal() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = "about:blank";
+            }
+        }
+
         function getAvailableCompletions(input) {
-            const commands = ["ls", "cd", "pwd", "cat", "mkdir", "touch", "rm", "date", "echo", "whoami", "downld", "clear", "theme", "history", "newtab", "reboot"];
+            const commands = ["ls", "cd", "pwd", "cat", "mkdir", "touch", "cp", "mv", "rm", "sudo", "date", "echo", "whoami", "downld", "clear", "theme", "history", "newtab", "reboot", "exit"];
             const parts = input.trim().split(" ");
             
             // If we're completing a command (first word)
@@ -266,6 +274,10 @@
                             history = [];
                             historyIndex = -1;
                             await renderBootSequence();
+                        } else if (result === "EXIT") {
+                            waitingForPassword = false;
+                            leaveTerminal();
+                            return;
                         } else {
                             // Command executed successfully or returned result
                             waitingForPassword = false;
@@ -328,6 +340,9 @@
                         history = [];
                         historyIndex = -1;
                         await renderBootSequence();
+                        return;
+                    } else if (result === "EXIT") {
+                        leaveTerminal();
                         return;
                     } else {
                         output.innerHTML += `<div><span style="color:var(--prompt-color)">sangeeth@portfolio:${currentDir}$</span> ${escapeHtml(val)}</div>`;
