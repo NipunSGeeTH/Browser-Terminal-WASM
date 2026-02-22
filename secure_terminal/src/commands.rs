@@ -10,6 +10,9 @@ use wasm_bindgen::prelude::JsValue;
 
 const SUDO_PASSWORD: &str = "Sangeeth@mypass123"; // Default sudo password
 const THEMES: [&str; 4] = ["matrix", "sunset", "dracula", "light"];
+const CV_URL: &str = "https://cv.nipunsgeeth.top";
+const PROJECT_URL: &str = "https://nipunsgeeth.top/projects";
+const BLOG_URL: &str = "https://nipunsgeeth.top/blog";
 
 fn is_binary_file(path: &str, content: &[u8]) -> bool {
     let lower = path.to_ascii_lowercase();
@@ -68,6 +71,24 @@ pub fn execute_command(
     term: &mut TerminalState,
     input: &str,
 ) -> String {
+    let parts: Vec<&str> = input.trim().split_whitespace().collect();
+    if parts.is_empty() {
+        return "".to_string();
+    }
+
+    let cmd = parts[0];
+    let args = &parts[1..];
+    let now = Date::now();
+
+    // Internal commands used by frontend for prompt/autocomplete updates.
+    // These must bypass sudo password state.
+    if cmd == "__pwd__" {
+        return handle_pwd(fs);
+    }
+    if cmd == "__ls__" {
+        return handle_ls(fs, &[]);
+    }
+
     // Check if we're waiting for a password
     if sudo.waiting_for_password {
         if input.trim() == "__INTERRUPT__" || input.trim() == "^C" {
@@ -89,23 +110,6 @@ pub fn execute_command(
         } else {
             return "[sudo] Sorry, try again.".to_string();
         }
-    }
-
-    let parts: Vec<&str> = input.trim().split_whitespace().collect();
-    if parts.is_empty() {
-        return "".to_string();
-    }
-
-    let cmd = parts[0];
-    let args = &parts[1..];
-    let now = Date::now();
-
-    // Internal command used by frontend to refresh prompt without polluting history
-    if cmd == "__pwd__" {
-        return handle_pwd(fs);
-    }
-    if cmd == "__ls__" {
-        return handle_ls(fs, &[]);
     }
 
     term.history.push(input.trim().to_string());
@@ -308,7 +312,7 @@ fn handle_rm(fs: &mut FileSystem, sudo: &SudoState, args: &[&str]) -> String {
 
     // Check if user is authenticated with sudo
     if !sudo.authenticated {
-        return "rm: Permission denied. Use 'sudo <password> rm <filename>' or 'sudo <password>' first.".to_string();
+        return "rm: Permission denied. Use 'sudo <password> rm <filename>' or 'sudo <password>' first.\nHint: If you are a bus driver, you can drive forward and reverse, but passengers cannot.".to_string();
     }
 
     let target = fs.resolve_path(args[0]);
@@ -351,6 +355,17 @@ fn handle_newtab(args: &[&str]) -> String {
     }
 
     let raw = args.join(" ").trim().to_string();
+    let raw_lower = raw.to_ascii_lowercase();
+    if raw_lower == "cv" || raw_lower == "cv.txt" {
+        return format!("NEWTAB:{}", CV_URL);
+    }
+    if raw_lower == "projects" || raw_lower == "project" || raw_lower == "projects.txt" {
+        return format!("NEWTAB:{}", PROJECT_URL);
+    }
+    if raw_lower == "blog" || raw_lower == "blog.txt" {
+        return format!("NEWTAB:{}", BLOG_URL);
+    }
+
     if raw.chars().any(char::is_whitespace) {
         return format!("newtab: invalid URL '{}'", raw);
     }
@@ -424,6 +439,11 @@ fn handle_help() -> String {
 fn handle_download(fs: &FileSystem, args: &[&str]) -> String {
     if args.is_empty() {
         return "Usage: download <filename>".to_string();
+    }
+
+    let requested = args[0].to_ascii_lowercase();
+    if requested == "cv" || requested == "cv.txt" || requested.ends_with("/cv.txt") {
+        return format!("NEWTAB:{}", CV_URL);
     }
 
     let target = fs.resolve_path(args[0]);

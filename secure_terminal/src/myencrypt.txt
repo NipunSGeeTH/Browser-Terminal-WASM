@@ -1,1 +1,2 @@
-f
+To view my Projects, run this command:
+    newtab project
